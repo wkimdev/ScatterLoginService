@@ -7,11 +7,20 @@
 <script>
 import ScatterJS from "scatterjs-core";
 import ScatterEOS from "scatterjs-plugin-eosjs";
+import Eos from "eosjs";
 import Home from "./components/Home";
 import LoginView from "./components/LoginView";
 import RequestInstallView from "./components/RequestInstallView";
+import networking from "./networking.json";
 
 ScatterJS.plugins(new ScatterEOS());
+
+// mainnet
+// const network = networking["mainnet"];
+// testnet
+const network = networking["junglenet"];
+
+//const APP_NAME = "scatter-login-service";
 
 export default {
   name: "App",
@@ -22,11 +31,12 @@ export default {
   },
   created: function() {
     this.load();
+    //console.log("start load~~~");
   },
   methods: {
     load() {
+      console.log("load method start ~~~");
       var checkedValue;
-
       ScatterJS.scatter.connect("scatter-login-service").then(connected => {
         if (!connected) {
           checkedValue = false;
@@ -37,19 +47,20 @@ export default {
         }
 
         const scatter = ScatterJS.scatter;
+        const eos = scatter.eos(network, Eos);
+
         if (scatter.isExtension) {
+          console.log("connected scatter");
           checkedValue = true;
           alert("scatter is installed! :" + checkedValue);
           this.checked = checkedValue;
           window.ScatterJS = null;
-          this.$router.push({
-            path: "/LoginView",
-            props: { checked: "test hi htest~~ " }
-          });
+          this.$router.push({ path: "/LoginView" });
         }
 
         return;
       });
+      console.log("load method end ~~~");
     }
   },
   components: {
