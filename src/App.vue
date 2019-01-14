@@ -38,6 +38,7 @@ export default {
       console.log("load method start ~~~");
       var checkedValue;
       ScatterJS.scatter.connect("scatter-login-service").then(connected => {
+        console.log("inside scatter connect sentence ~~~");
         if (!connected) {
           checkedValue = false;
           alert("scatter not installed : " + checkedValue);

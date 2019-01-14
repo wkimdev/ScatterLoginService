@@ -11,7 +11,27 @@
     <br>
     <button @click="authenticate()">Authenticate</button>
     <button @click="suggestNetwork()">suggestNetwork</button>
+    <br>
+    <br>
+    <h2>wallet</h2>
+    <br>Transfer to :
+    <input v-model="transferTo" placeholder="transfer account">
+    <br>
+    <br>amount :
+    <input v-model="TokenAmount" placeholder="1.0000 EOS">
+    <br>Token symbol :
+    <input placeholder="EOS">
+    <br>
     <button @click="requestTransfer()">requestTransfer</button>
+    <br>check trancsaction ID :
+    <input v-model="transcationId">
+    <br>
+    <br>
+
+    <h2>vote</h2>
+
+    <button @click="vote()">vote</button>
+    <!-- vote 는 컨트랙트 기반으로 따로 만들어야 할 듯.. -->
     <br>
     <p>getPublicKey는 이슈가 있어 불러오지 못함.
       <br>linkAccount, getArbitrarySignature api가 publickey api와 연결되어 있기 때문에 호출시error
@@ -43,7 +63,10 @@ export default {
       account_name: null,
       random_name: null,
       publicKey: null,
-      eos: null
+      eos: null,
+      transferTo: null,
+      TokenAmount: null,
+      transcationId: null
     };
   },
   created: function() {
@@ -62,10 +85,6 @@ export default {
       await scatter
         .getIdentity({ accounts: [network] })
         .then(async identity => {
-          // this.setState({ identity })
-          // identity는 hash와 account, public key, name 등을 반환...
-          // 인증이 유효할 경우, 로그인이 허용되고, 화면에 accout를 뿌리게 된다.
-          // console.log("test :" + identity.accounts[0].name);
           console.log(identity);
 
           _self.account_name =
@@ -166,8 +185,6 @@ export default {
     requestTransfer() {
       /**
        * 사용자에게 전송 요청을 보내는 api
-       * 결과를 결코 반환하지 않기 때문에 로그인 인증의 필요성을 우회하는 일종의 "기부"버튼의 역할
-       * 금액을 0으로 설정하면 사용자가 금액을 선택할 수 있습니다. 값이 0보다 크면 사용자가 지불해야하는 고정 금액입니다.
        */
       console.log("call scatter requestTransfer api ");
 
@@ -179,16 +196,28 @@ export default {
         requiredFields: {}
       };
 
-      // eos를 proxy로 가져옴?
+      let transferToAccount = this.transferTo;
+      let transferAmount = this.TokenAmount;
+      console.log(transferToAccount);
+      console.log(transferAmount);
+
       this.eos
-        .transfer(account.name, "eosio", "1.0000 EOS", "", opts)
+        // from, to, quantity, memo
+        // .transfer(account.name, "eosio", "1.0000 EOS", "", opts)
+        // assertion failure with message: unable to find key","file":"wasm_interface.cpp","line_number":917,"method":"eosio_assert"
+        // unable to find key error
+        //.transfer(account.name, "oasistokenn1", "1.0000 OAS", "", opts)
+        .transfer(account.name, transferToAccount, transferAmount, "", opts)
         .then(trx => {
           console.log("trx", trx);
+          this.transcationId = trx.transaction_id;
         })
         .catch(err => {
           console.error(err);
         });
     },
+    // vote? 하는건 왜 없지???
+
     createTransaction() {
       /**
        * 거래를 작성하기위한 작업 배열을 허용
