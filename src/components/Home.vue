@@ -19,7 +19,6 @@ export default {
   },
   created() {
     // 두번 찍는다..
-    // console.log("check props :" + this.checked);
   },
   components: {
     Spinner

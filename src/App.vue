@@ -31,37 +31,22 @@ export default {
   },
   created: function() {
     this.load();
-    //console.log("start load~~~");
   },
   methods: {
     load() {
-      console.log("load method start ~~~");
-      var checkedValue;
+      var _self = this;
       ScatterJS.scatter.connect("scatter-login-service").then(connected => {
-        console.log("inside scatter connect sentence ~~~");
-        if (!connected) {
-          checkedValue = false;
-          alert("scatter not installed : " + checkedValue);
-          this.checked = checkedValue;
-          this.$router.push({ path: "/RequestInstallView" });
-          return;
-        }
-
-        const scatter = ScatterJS.scatter;
-        const eos = scatter.eos(network, Eos);
-
-        if (scatter.isExtension) {
-          console.log("connected scatter");
-          checkedValue = true;
-          alert("scatter is installed! :" + checkedValue);
-          this.checked = checkedValue;
-          window.ScatterJS = null;
-          this.$router.push({ path: "/LoginView" });
-        }
-
-        return;
+        return new Promise(() => {
+          if (!connected) {
+            return _self.$router.push({ path: "/RequestInstallView" });
+          } else {
+            const scatter = ScatterJS.scatter;
+            const eos = scatter.eos(network, Eos);
+            window.ScatterJS = null;
+            return _self.$router.push({ path: "/LoginView" });
+          }
+        });
       });
-      console.log("load method end ~~~");
     }
   },
   components: {

@@ -5,6 +5,10 @@
     <h2>{{ account_name }}</h2>
     <h2>randomId : {{ random_name }}</h2>
 
+    <p>Available Funds: {{ account_funds }}</p>
+    <p>RAM Usage : {{ ram_usage }} / {{ ram_max }}</p>
+    <p>CPU Usage : {{ cpu_usage }} / {{ cpu_max }}</p>
+    <p>NET Usage : {{ net_usage }} / {{ net_max }}</p>
     <button @click="login()">attach scatter identity</button>
     <button @click="logout()">remove identity</button>
     <br>
@@ -19,8 +23,6 @@
     <br>
     <br>amount :
     <input v-model="TokenAmount" placeholder="1.0000 EOS">
-    <br>Token symbol :
-    <input placeholder="EOS">
     <br>
     <button @click="requestTransfer()">requestTransfer</button>
     <br>check trancsaction ID :
@@ -29,9 +31,32 @@
     <br>
 
     <h2>vote</h2>
+    <br>
+    <br>Voter :
+    <input v-model="voter">
+    <br>proxy :
+    <input type="text">
+    <br>
+    <br>producers :
+    <input v-model="producers">
+    <br>
 
     <button @click="vote()">vote</button>
     <!-- vote 는 컨트랙트 기반으로 따로 만들어야 할 듯.. -->
+    <br>
+    <br>check trancsaction ID :
+    <input v-model="voteTranscationId">
+    <br>
+    <br>
+    <button @click="buyRam()">buyRam</button>
+    <br>
+    <button @click="sellRam()">sellRam</button>
+    <br>
+    <button @click="bidName()">bidname</button>
+    <br>
+    <button @click="bandwidthDelegate()">bandwidthDelegate</button>
+    <br>
+    <button @click="bandwidthUndelegate()">bandwidthUndelegate</button>
     <br>
     <p>getPublicKey는 이슈가 있어 불러오지 못함.
       <br>linkAccount, getArbitrarySignature api가 publickey api와 연결되어 있기 때문에 호출시error
@@ -66,7 +91,17 @@ export default {
       eos: null,
       transferTo: null,
       TokenAmount: null,
-      transcationId: null
+      transcationId: null,
+      account_funds: null,
+      ram_usage: null,
+      cpu_usage: null,
+      net_usage: null,
+      ram_max: null,
+      cpu_max: null,
+      net_max: null,
+      voter: null,
+      producers: null,
+      voteTranscationId: null
     };
   },
   created: function() {
@@ -80,6 +115,7 @@ export default {
       // suggestNetwork
       await scatter.suggestNetwork(network);
       this.eos = scatter.eos(network, Eos);
+      console.log(this.eos);
 
       // get identity
       await scatter
@@ -91,6 +127,27 @@ export default {
             identity.accounts[0].name + "@" + identity.accounts[0].authority;
           _self.random_name = identity.name;
 
+          //.transfer(account.name, transferToAccount, transferAmount, "", opts)
+          //console.log(this.eos.getAccount(identity.accounts[0].name));
+          this.eos
+            .getAccount(identity.accounts[0].name)
+            .then(eos_account => {
+              console.log(eos_account);
+              _self.account_funds = eos_account.core_liquid_balance;
+
+              // no
+              _self.ram_max = _self.formatBytes(eos_account.ram_quota);
+              _self.ram_usage = _self.formatBytes(eos_account.ram_usage);
+              _self.net_usage = _self.formatBytes(eos_account.net_limit.used);
+              _self.net_max = _self.formatBytes(eos_account.net_limit.max);
+
+              _self.cpu_usage = _self.timeConversion(
+                eos_account.cpu_limit.used
+              );
+              _self.cpu_max = _self.timeConversion(eos_account.cpu_limit.max);
+            })
+            .catch({});
+
           // publickey는 가저오는 api가 따로 있다. 아래처럼 가져오면 eos pulickey가 아닌, 새로운 키를 반환함.
           //_self.publicKey = identity.publicKey;
         })
@@ -100,12 +157,46 @@ export default {
 
       //_self.eos = scatter.eos(network, Eos);
     },
+    // util로 빼기
+    formatBytes(bytes, decimals) {
+      if (bytes == 0) return "0 Bytes";
+      var k = 1024,
+        dm = decimals <= 0 ? 0 : decimals || 2,
+        sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
+        i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+    },
+    timeConversion(microsec) {
+      var millisec = (microsec / 1000).toFixed(1);
+      var seconds = (microsec / 1000 / 1000).toFixed(1);
+      var minutes = (microsec / (1000 * 60) / 1000).toFixed(1);
+      var hours = (microsec / (1000 * 60 * 60) / 1000).toFixed(1);
+      var days = (microsec / (1000 * 60 * 60 * 24) / 1000).toFixed(1);
+
+      if (microsec < 1000) {
+        return microsec + " µs ";
+      } else if (millisec < 60) {
+        return millisec + " ms";
+      } else if (seconds < 60) {
+        return seconds + " s";
+      } else if (minutes < 60) {
+        return minutes + " min";
+      } else if (hours < 24) {
+        return hours + " hr";
+      } else {
+        return days + " days";
+      }
+    },
     logout() {
       console.log("call scatter forgetIdentity api ");
       scatter.forgetIdentity();
       this.account_name = null;
       this.random_name = null;
       this.publicKey = null;
+      this.account_funds = null;
+      this.ram_usage = null;
+      this.cpu_usage = null;
+      this.net_usage = null;
     },
     authenticate() {
       console.log("call scatter authenticate api ");
@@ -184,7 +275,7 @@ export default {
     },
     requestTransfer() {
       /**
-       * 사용자에게 전송 요청을 보내는 api
+       * 사용자에게 전송 요청을 보내는 api, 단순히 서명만 줌?!!
        */
       console.log("call scatter requestTransfer api ");
 
@@ -198,15 +289,16 @@ export default {
 
       let transferToAccount = this.transferTo;
       let transferAmount = this.TokenAmount;
-      console.log(transferToAccount);
-      console.log(transferAmount);
+      console.log(typeof transferAmount);
 
+      // eosio.token 기반으로 transfer 수행, 다른 컨트랙 기반은 아직.
       this.eos
         // from, to, quantity, memo
         // .transfer(account.name, "eosio", "1.0000 EOS", "", opts)
         // assertion failure with message: unable to find key","file":"wasm_interface.cpp","line_number":917,"method":"eosio_assert"
         // unable to find key error
         //.transfer(account.name, "oasistokenn1", "1.0000 OAS", "", opts)
+        // { headers: { 'Access-Control-Allow-Origin': true }})
         .transfer(account.name, transferToAccount, transferAmount, "", opts)
         .then(trx => {
           console.log("trx", trx);
@@ -217,7 +309,156 @@ export default {
         });
     },
     // vote? 하는건 왜 없지???
+    vote() {
+      var _self = this;
+      let VoteProducers = this.producers; // 여러값이 선택될 수 있음
+      let Voter = this.voter;
 
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+      const opts = {
+        authorization: [`${account.name}@${account.authority}`],
+        requiredFields: {}
+      };
+
+      // 글자는 정렬되어야 한다(sorted).
+      let producer = [
+        //"lioninjungle" // 한번 투표 이후 deadline exceeded
+        "bigpolarbear",
+        "eos42panther",
+        "mosquitometa",
+        "ohtigertiger",
+        "proudrooster"
+      ]; // 스트링하나씩 가져옴.
+
+      console.log(this.eos);
+      // eos 컨트랙의 내용을 가져온다.
+      this.eos
+        .voteproducer(account.name, "", producer, opts)
+        .then(trx => {
+          console.log("trx", trx);
+          _self.voteTranscationId = trx.transaction_id;
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    // vote by proxy
+    voteByProxy() {},
+    // eos 단위 bytes 단위
+    buyRam() {
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+      const opts = {
+        authorization: [`${account.name}@${account.authority}`],
+        requiredFields: {}
+      };
+
+      console.log(account.name);
+      // console.log();
+
+      this.eos
+        .buyram(account.name, "doublechain4", "1.0000 EOS")
+        .then(trx => {
+          console.log("trx", trx);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    sellRam() {
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+      const opts = {
+        authorization: [`${account.name}@${account.authority}`],
+        requiredFields: {}
+      };
+
+      console.log(account.name);
+      // console.log();
+
+      // account, byte
+      this.eos
+        .sellram(account.name, "1192")
+        .then(trx => {
+          console.log("trx", trx);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    bidName() {
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+      const opts = {
+        authorization: [`${account.name}@${account.authority}`],
+        requiredFields: {}
+      };
+
+      console.log(account.name);
+      // console.log();
+
+      // bidder, newname, bid
+      this.eos
+        .bidname(account.name, "cat2", "5.0000 EOS")
+        .then(trx => {
+          console.log("trx", trx);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    bandwidthDelegate() {
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+      const opts = {
+        authorization: [`${account.name}@${account.authority}`],
+        requiredFields: {}
+      };
+
+      console.log(account.name);
+      // console.log();
+
+      //
+      // from, receiver, stake_net_quantity, stake_cpu_quantity
+      // 어디가 문제일까???...
+      this.eos
+        .delegatebw(0, account.name, account.name, "0.0002 EOS", 0.2)
+        .then(trx => {
+          console.log("trx", trx);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    bandwidthUndelegate() {
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+      const opts = {
+        authorization: [`${account.name}@${account.authority}`],
+        requiredFields: {}
+      };
+
+      console.log(account.name);
+      // console.log();
+
+      // from, receiver, unstake_net_quantity, unstake_cpu_quantity
+      this.eos
+        .undelegatebw(account.name, "cat2", "5.0000 EOS")
+        .then(trx => {
+          console.log("trx", trx);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    buyRamByBytes() {},
     createTransaction() {
       /**
        * 거래를 작성하기위한 작업 배열을 허용
