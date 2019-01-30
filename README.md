@@ -2,6 +2,11 @@
 
 > scatter를 이용한 login sample
 
+## tech stack
+
+- scatterjs-core
+- vue.js
+
 #### test 화면
 
 - http://localhost:8090/ 를 호출하면 브라우저에 스캐터 extension이 설치되었는지 먼저 체크합니다.
@@ -9,10 +14,9 @@
 
 #### TODO
 
-- scatter가 스마트컨트랙트를 이용한 인증 방식인지 파악
-- scatter 인증 서비스가 인증 이후 인증 토큰(?)같은걸 어떻게 발급하는지 찾아보기
 - scatter를 설치하지 않은 경우 login컴포넌트에 접근 못하도록 라우터 처리.
-- getPublicKey api의 not function .. 해결하기.
+- getPublicKey api의 not function issue
+- eos.updateauth : permission 변경 이슈 체크
 - 기타 api test.
 
 ## Build Setup
