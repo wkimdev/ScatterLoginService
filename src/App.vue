@@ -1,8 +1,11 @@
 <template>
-  <div id="app">
-    <router-view/>
+  <!-- <div id="app"> -->
+  <div>
+    <router-view keep-alive></router-view>
+    <p>this is app.vue</p>
   </div>
 </template>
+<style src="./styles/all.sass" lang="sass"></style>
 
 <script>
 import ScatterJS from "scatterjs-core";
@@ -12,6 +15,8 @@ import Home from "./components/Home";
 import LoginView from "./components/LoginView";
 import RequestInstallView from "./components/RequestInstallView";
 import networking from "./networking.json";
+//import "bootstrap/dist/css/bootstrap.min.css";
+//import "bootstrap-vue/dist/bootstrap-vue.css";
 
 ScatterJS.plugins(new ScatterEOS());
 
@@ -35,6 +40,7 @@ export default {
   methods: {
     load() {
       var _self = this;
+      // scatter classic (web extension) install check
       ScatterJS.scatter.connect("scatter-login-service").then(connected => {
         return new Promise(() => {
           if (!connected) {
@@ -56,8 +62,6 @@ export default {
   }
 };
 </script>
-
-
 
 
 <style>

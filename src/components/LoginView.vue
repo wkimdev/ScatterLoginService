@@ -1,87 +1,118 @@
 <template>
   <div class="app">
-    <h1>{{ msg }}</h1>
+    <app-header></app-header>
+    <div>
+      <b-card bg-variant="dark" text-variant="white" title="Card Title">
+        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+        <b-button href="#" variant="primary">Go somewhere</b-button>
+      </b-card>
 
-    <h2>{{ account_name }}</h2>
-    <h2>randomId : {{ random_name }}</h2>
+      <h1>{{ msg }}</h1>
 
-    <p>Available Funds: {{ account_funds }}</p>
-    <p>RAM Usage : {{ ram_usage }} / {{ ram_max }}</p>
-    <p>CPU Usage : {{ cpu_usage }} / {{ cpu_max }}</p>
-    <p>NET Usage : {{ net_usage }} / {{ net_max }}</p>
-    <button @click="login()">attach scatter identity</button>
-    <button @click="logout()">remove identity</button>
-    <br>
-    <br>
-    <button @click="authenticate()">Authenticate</button>
-    <button @click="suggestNetwork()">suggestNetwork</button>
-    <br>
-    <br>
-    <h2>wallet</h2>
-    <br>Transfer to :
-    <input v-model="transferTo" placeholder="transfer account">
-    <br>
-    <br>amount :
-    <input v-model="TokenAmount" placeholder="1.0000 EOS">
-    <br>
-    <button @click="requestTransfer()">requestTransfer</button>
-    <br>check trancsaction ID :
-    <input v-model="transcationId">
-    <br>
-    <br>
+      <h2>{{ account_name }}</h2>
+      <h2>randomId : {{ random_name }}</h2>
 
-    <h2>vote</h2>
-    <br>
-    <br>Voter :
-    <input v-model="voter">
-    <br>proxy :
-    <input type="text">
-    <br>
-    <br>producers :
-    <input v-model="producers">
-    <br>
+      <p>Available Funds: {{ account_funds }}</p>
+      <p>RAM Usage : {{ ram_usage }} / {{ ram_max }}</p>
+      <p>CPU Usage : {{ cpu_usage }} / {{ cpu_max }}</p>
+      <p>NET Usage : {{ net_usage }} / {{ net_max }}</p>
+      <button @click="login()">attach scatter identity</button>
+      <button @click="logout()">remove identity</button>
+      <br>
+      <br>
+      <button @click="getchainInfo()">check chain info</button>
+      <br>
+      <br>
+      <button @click="authenticate()">Authenticate</button>
+      <button @click="suggestNetwork()">suggestNetwork</button>
+      <br>
+      <br>
+      <h2>wallet</h2>
+      <br>Transfer to :
+      <input v-model="transferTo" placeholder="transfer account">
+      <br>
+      <br>amount :
+      <input v-model="TokenAmount" placeholder="1.0000 EOS">
+      <br>
+      <button @click="requestTransfer()">requestTransfer</button>
+      <br>check trancsaction ID :
+      <input v-model="transcationId">
+      <br>
+      <br>
 
-    <button @click="vote()">vote</button>
-    <!-- vote 는 컨트랙트 기반으로 따로 만들어야 할 듯.. -->
-    <br>
-    <br>check trancsaction ID :
-    <input v-model="voteTranscationId">
-    <br>
-    <br>
-    <button @click="buyRam()">buyRam</button>
-    <br>
-    <button @click="sellRam()">sellRam</button>
-    <br>
-    <button @click="bidName()">bidname</button>
-    <br>
-    <button @click="bandwidthDelegate()">bandwidthDelegate</button>
-    <br>
-    <button @click="bandwidthUndelegate()">bandwidthUndelegate</button>
-    <br>
-    <p>getPublicKey는 이슈가 있어 불러오지 못함.
-      <br>linkAccount, getArbitrarySignature api가 publickey api와 연결되어 있기 때문에 호출시error
-    </p>
-    <br>
-    <button @click="getPublicKey()">getPublicKey</button>
-    <button @click="linkAccount()">linkAccount</button>
-    <button @click="getArbitrarySignature()">getArbitrarySignature</button>
-    <!-- <p>publicKey : {{ publicKey }}</p> -->
-    <!-- <p>checked : {{ checked }}</p> -->
+      <h2>vote</h2>
+      <br>
+      <br>Voter :
+      <input v-model="voter">
+      <br>proxy :
+      <input type="text">
+      <br>
+      <br>producers :
+      <input v-model="producers">
+      <br>
+
+      <button @click="vote()">vote</button>
+      <!-- vote 는 컨트랙트 기반으로 따로 만들어야 할 듯.. -->
+      <br>
+      <br>check trancsaction ID :
+      <input v-model="voteTranscationId">
+      <br>
+      <br>
+      <button @click="buyRam()">buyRam</button>
+      <br>
+      <button @click="sellRam()">sellRam</button>
+      <br>
+      <button @click="bidName()">bidname</button>
+      <br>
+      <button @click="bandwidthDelegate()">bandwidthDelegate</button>
+      <br>
+      <button @click="bandwidthUndelegate()">bandwidthUndelegate</button>
+      <br>
+      <p>getPublicKey는 이슈가 있어 불러오지 못함.
+        <br>linkAccount, getArbitrarySignature api가 publickey api와 연결되어 있기 때문에 호출시error
+      </p>
+      <br>
+      <button @click="getPublicKey()">getPublicKey</button>
+      <button @click="linkAccount()">linkAccount</button>
+      <button @click="getArbitrarySignature()">getArbitrarySignature</button>
+      <!-- <p>publicKey : {{ publicKey }}</p> -->
+      <!-- <p>checked : {{ checked }}</p> -->
+      <br>
+      <br>
+      <p>change Permission</p>
+      <input type="text" placeholder="New Owner Key">
+      <br>
+      <input type="text" placeholder="New Active Key">
+      <br>
+      <button @click="changePermission()">change permission</button>
+    </div>
+    <app-footer></app-footer>
   </div>
 </template>
 
 <script>
 import networking from "../networking.json"; // app.vue에서 공통으로 처리하는 법 ?
 import Eos from "eosjs"; // app.vue에서 공통으로 처리하는 법
+import AppHeader from "@/components/template/AppHeader";
+import AppFooter from "@/components/template/AppFooter";
 
 // mainnet
 // const network = networking["mainnet"];
 // testnet
 const network = networking["junglenet"];
 
+const unintendedPublic =
+  "EOS7H3tK2xkpGSm38a21Pxp8kZcxj2eds7AhHSEGLz4kdA7APqupy";
+const intendedPublic = "EOS8XEuA1DsUwzbnsR9CAgkjifywWuKTuTtnvpD61urWBKhBA2j1o";
+// active로 하니까 message: "Missing required accounts, repull the identity"
+
 export default {
   name: "LoginView",
   props: ["checked"],
+  components: {
+    AppHeader,
+    AppFooter
+  },
   data() {
     return {
       msg: "Welcome, A Scatter account is required",
@@ -101,13 +132,31 @@ export default {
       net_max: null,
       voter: null,
       producers: null,
-      voteTranscationId: null
+      voteTranscationId: null,
+      permission: null,
+      parent: null,
+      auth: null,
+      threshold: null,
+      keys: null,
+      code: null,
+      type: null,
+      authorization: null,
+      ricardian: null,
+      op_data: null
     };
   },
   created: function() {
     //this.load();
   },
   methods: {
+    getchainInfo() {
+      const baseURI = "https://jsonplaceholder.typicode.com";
+
+      this.$http.get(`${baseURI}/posts`).then(result => {
+        console.log(result);
+        //this.posts = result.data
+      });
+    },
     async login() {
       var _self = this;
       console.log("call scatter suggestNetwork, getIdentity api ");
@@ -279,6 +328,8 @@ export default {
        */
       console.log("call scatter requestTransfer api ");
 
+      // 어떻게 데이터를 주고 받길래 scatter가 뜰 수 있을까??
+
       const account = scatter.identity.accounts.find(
         x => x.blockchain === "eos"
       );
@@ -293,12 +344,6 @@ export default {
 
       // eosio.token 기반으로 transfer 수행, 다른 컨트랙 기반은 아직.
       this.eos
-        // from, to, quantity, memo
-        // .transfer(account.name, "eosio", "1.0000 EOS", "", opts)
-        // assertion failure with message: unable to find key","file":"wasm_interface.cpp","line_number":917,"method":"eosio_assert"
-        // unable to find key error
-        //.transfer(account.name, "oasistokenn1", "1.0000 OAS", "", opts)
-        // { headers: { 'Access-Control-Allow-Origin': true }})
         .transfer(account.name, transferToAccount, transferAmount, "", opts)
         .then(trx => {
           console.log("trx", trx);
@@ -308,7 +353,6 @@ export default {
           console.error(err);
         });
     },
-    // vote? 하는건 왜 없지???
     vote() {
       var _self = this;
       let VoteProducers = this.producers; // 여러값이 선택될 수 있음
@@ -377,9 +421,6 @@ export default {
         requiredFields: {}
       };
 
-      console.log(account.name);
-      // console.log();
-
       // account, byte
       this.eos
         .sellram(account.name, "1192")
@@ -400,7 +441,6 @@ export default {
       };
 
       console.log(account.name);
-      // console.log();
 
       // bidder, newname, bid
       this.eos
@@ -420,11 +460,6 @@ export default {
         authorization: [`${account.name}@${account.authority}`],
         requiredFields: {}
       };
-
-      console.log(account.name);
-      // console.log();
-
-      //
       // from, receiver, stake_net_quantity, stake_cpu_quantity
       // 어디가 문제일까???...
       this.eos
@@ -458,6 +493,70 @@ export default {
           console.error(err);
         });
     },
+    async changePermission() {
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+
+      const accountName = account.name;
+      const perms = await this.getNewPermissions(accountName); //
+      const perms2 = perms[0];
+      console.log("New permissions =>", JSON.stringify(perms2));
+
+      const updateAuthResult = await this.eos.transaction(tr => {
+        //for (const perm of perms2) {
+        tr.updateauth(
+          {
+            account: accountName,
+            permission: perms2.perm_name,
+            parent: perms2.parent,
+            auth: perms2.required_auth
+          },
+          { authorization: `${accountName}@owner` }
+        );
+        // }
+      });
+      console.log("Success =>", JSON.stringify(updateAuthResult));
+
+      // console.log(account);
+      //let pubkey = "EOS8XEuA1DsUwzbnsR9CAgkjifywWuKTuTtnvpD61urWBKhBA2j1o";
+      //let pubkey = "EOS6xg86wexCzoHaSwhFYxswDB3ACPsKCUVSPKNz8tSMtKBwkp29Y";
+
+      // owner계정으로 하면 Missing required accounts, repull the identity"
+      // active계정으로 하면 {"code":3090003,"name":"unsatisfixed_authorization","what":"Provided keys, permissions, .. 에러 ==>
+      // this.eos
+      //   .updateauth({
+      //     account: accountName,
+      //     permission: "active", //바꾸는 permission - active 영역
+      //     parent: "owner",
+      //     auth: {
+      //       threshold: 1,
+      //       keys: [{ key: pubkey, weight: 1 }],
+      //       accounts: [],
+      //       waits: []
+      //     },
+      //     delay: 0
+      //   })
+      //   .then(trx => {
+      //     console.log("trx", trx);
+      //     this.transcationId = trx.transaction_id;
+      //   })
+      //   .catch(err => {
+      //     console.error(err);
+      //   });
+    },
+    async getNewPermissions(accountName) {
+      const account = await this.eos.getAccount(accountName);
+      const perms = JSON.parse(JSON.stringify(account.permissions)); // clone
+      for (const perm of perms) {
+        for (const key of perm.required_auth.keys) {
+          if (key.key === unintendedPublic) {
+            key.key = intendedPublic;
+          }
+        }
+      }
+      return perms;
+    },
     buyRamByBytes() {},
     createTransaction() {
       /**
@@ -477,7 +576,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style>
 h1,
 h2 {
   font-weight: normal;

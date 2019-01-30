@@ -35,6 +35,9 @@ module.exports = {
     alias: {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
+      'src': path.resolve(__dirname, '../src'),
+      'assets': path.resolve(__dirname, '../src/assets'),
+      'components': path.resolve(__dirname, '../src/components')
     }
   },
 
@@ -44,7 +47,32 @@ module.exports = {
       {
         test: /\.vue$/,
         loader: 'vue-loader',
-        options: vueLoaderConfig
+        //options: vueLoaderConfig
+        options: {
+          loaders: {
+            'scss': 'vue-style-loader!css-loader!sass-loader',
+            'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax'
+          }
+        }
+      },
+      {
+        // test: /\.css/,
+        // 
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
+      {
+        test: /\.scss$/,
+        use: [{
+            loader: 'css-loader'
+          },
+          {
+            loader: 'sass-loader'
+          }
+        ]
       },
       {
         test: /\.js$/,
