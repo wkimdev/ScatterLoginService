@@ -1,6 +1,6 @@
 # scatter-login-service
 
-> scatter를 이용한 login sample
+> SSO(single-sign-on)인증 기반인 scatter를 이용한 login sample 구현
 
 ## tech stack
 
