@@ -7,6 +7,9 @@
 - scatterjs-core
 - vue.js
 
+## scatter workflow 분석
+- check wiki! ==> https://github.com/wkimdev/ScatterLoginService/wiki
+
 #### test 화면
 
 - http://localhost:8090/ 를 호출하면 브라우저에 스캐터 extension이 설치되었는지 먼저 체크합니다.
